@@ -2,6 +2,7 @@ pipeline{
     agent any
     stages {
         stage('Build') {
+            cleanWs()
             agent {
                 docker {
                     image 'node:18-alpine'
