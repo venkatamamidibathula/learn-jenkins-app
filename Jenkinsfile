@@ -10,6 +10,8 @@ pipeline{
             }
             steps {
                 sh '''
+                    echo 'Cleaning workspace...'
+                    rm -rf node_modules package-lock.json
                     echo 'Building..'
                     echo 'Running on node:'
                     node --version
