@@ -12,6 +12,8 @@ pipeline{
                 sh '''
                     echo 'Cleaning workspace...'
                     rm -rf node_modules package-lock.json
+                    echo 'Setting npm cache directory...'
+                    export NPM_CONFIG_CACHE=$(pwd)/.npm-cache
                     echo 'Building..'
                     echo 'Running on node:'
                     node --version
