@@ -1,65 +1,45 @@
-pipeline {
-    agent any
-
+pipeline{
     stages {
-        stage('Prepare') {
-            steps {
-                // Ensure workspace permissions are correct
-                sh '''
-                    echo "Preparing workspace..."
-                    ls -la
-                    chmod -R u+w .
-                '''
-            }
-        }
-
         stage('Build') {
             agent {
                 docker {
                     image 'node:18-alpine'
                     reuseNode true
-                    args '-u $(id -u):$(id -g)' // Run as the same user as the host
                 }
             }
             steps {
                 sh '''
-                    echo "Building the application..."
-                    
-                    # Verify Node.js and npm versions
+                    echo 'Building..'
+                    echo 'Running on node:'
                     node --version
                     npm --version
-                    
-                    # Clear npm cache to prevent corruption
-                    npm cache clean --force
-                    
-                    # Install dependencies using npm ci
-                    echo "Installing dependencies..."
-                    npm ci
-                    
-                    # Build the application
-                    echo "Running build script..."
+                    echo 'Installing dependencies...'
+                    npm install
                     npm run build
-                    
-                    # List directory contents after build
                     ls -la
                 '''
             }
         }
+        stage('Test') {
+            steps {
+                echo 'Testing..'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying....'
+            }
+        }
     }
-
     post {
         always {
-            // Clean up after the build
-            sh '''
-                echo "Cleaning up workspace..."
-                rm -rf node_modules
-            '''
+            echo 'This will always run'
         }
         success {
-            echo "Build completed successfully!"
+            echo 'This will run only if the build is successful'
         }
         failure {
-            echo "Build failed. Check logs for details."
+            echo 'This will run only if the build fails'
         }
     }
 }
