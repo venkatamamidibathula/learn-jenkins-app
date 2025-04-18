@@ -28,6 +28,10 @@ pipeline{
         stage('Test') {
             steps {
                 echo 'Testing..'
+                sh '''
+                    sh 'test -f build/index.html'
+
+                '''
             }
         }
         stage('Deploy') {
