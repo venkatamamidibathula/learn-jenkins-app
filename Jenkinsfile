@@ -1,5 +1,11 @@
 pipeline {
     agent any
+
+    environment {
+        // Point npm cache into the workspace, not /.npm
+        NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
+    }
+
     stages {
         stage('Build') {
             agent {
@@ -11,19 +17,17 @@ pipeline {
             steps {
                 sh '''
                     echo 'Cleaning workspace...'
-                    # Don't delete package-lock.json; only remove node_modules if needed
                     rm -rf node_modules
 
                     echo 'Setting npm cache directory...'
                     export NPM_CONFIG_CACHE=$(pwd)/.npm-cache
 
                     echo 'Building..'
-                    echo 'Running on node:'
                     node --version
                     npm --version
 
                     echo 'Installing dependencies...'
-                    npm ci  # or npm install if you must, but ci is better for CI
+                    npm ci
 
                     echo 'Running build...'
                     npm run build
@@ -32,6 +36,7 @@ pipeline {
                 '''
             }
         }
+
         stage('Test') {
             agent {
                 docker {
@@ -47,6 +52,7 @@ pipeline {
                 '''
             }
         }
+
         stage('E2E Test') {
             agent {
                 docker {
@@ -57,6 +63,9 @@ pipeline {
             steps {
                 echo 'Testing..'
                 sh '''
+                    # Ensure npm uses workspace cache
+                    export NPM_CONFIG_CACHE=$(pwd)/.npm-cache
+
                     npm install serve
                     node_modules/.bin/serve -s build &
                     sleep 10
@@ -64,16 +73,18 @@ pipeline {
                 '''
             }
         }
+
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
             }
         }
     }
+
     post {
         always {
-                echo 'This will always run'
-                junit 'jest-results/junit.xml'
+            echo 'This will always run'
+            junit 'jest-results/junit.xml'
         }
         success {
             echo 'This will run only if the build is successful'
