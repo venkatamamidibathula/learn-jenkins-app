@@ -90,11 +90,11 @@ pipeline {
                 docker {
                     image 'node:18-alpine'
                     reuseNode true
+                    args '-u root:root'
                 }
             }
             steps {
                 sh '''
-                    export HOME=$(pwd)
                     echo 'Deploying...'
                     npm install netlify-cli@20.1.1
                     node_modules/.bin/netlify --version
