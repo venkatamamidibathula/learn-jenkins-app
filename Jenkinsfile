@@ -104,7 +104,7 @@ pipeline {
                     npm install netlify-cli@20.1.1
                     node_modules/.bin/netlify --version
                     echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
-                    node_modules/.bin/netlify --status
+                    node_modules/.bin/netlify status
 
                     # Immediately restore ownership so later stages (non-root) can still read/write these files
                     echo "Restoring ownership to $ORIGINAL_OWNER..."
