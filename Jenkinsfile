@@ -8,18 +8,7 @@ pipeline {
     }
 
     stages {
-    stage('Clean') {
-    agent {
-        docker {
-            image 'node:18-alpine'
-            reuseNode true
-            args '-u root:root'
-        }
-    }
-    steps {
-        sh 'rm -rf node_modules build .npm'
-    }
-}
+
         stage('Build') {
             agent {
                 docker {
@@ -116,6 +105,18 @@ pipeline {
                 '''
             }
         }
+    stage('Clean') {
+    agent {
+        docker {
+            image 'node:18-alpine'
+            reuseNode true
+            args '-u root:root'
+        }
+    }
+    steps {
+        sh 'rm -rf node_modules build .npm'
+    }
+}
     }
 
     post {
