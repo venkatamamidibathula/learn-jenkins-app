@@ -4,6 +4,7 @@ pipeline {
     environment {
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
         NETLIFY_SITE_ID = 'b9398f62-1107-4461-adb2-0b8affb40254'
+        NETLIFY_AUTH_TOKEN = credentials('netlify-auth-token')
     }
 
     stages {
