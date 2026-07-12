@@ -36,41 +36,45 @@ pipeline {
                 '''
             }
         }
+        stage('Tests'){
+            parallel {
+                stage('Test') {
+                        agent {
+                            docker {
+                                image 'node:18-alpine'
+                                reuseNode true
+                            }
+                        }
+                        steps {
+                            echo 'Testing..'
+                            sh '''
+                                test -f build/index.html
+                                npm test
+                            '''
+                        }
+                    }
 
-        stage('Test') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
-                }
-            }
-            steps {
-                echo 'Testing..'
-                sh '''
-                    test -f build/index.html
-                    npm test
-                '''
-            }
-        }
+                stage('E2E Test') {
+                    agent {
+                            docker {
+                                image 'mcr.microsoft.com/playwright:v1.39.0-focal'
+                                reuseNode true
+                            }
+                        }
+                        steps {
+                            echo 'Testing..'
+                            sh '''
+                                # Ensure npm uses workspace cache
+                                export NPM_CONFIG_CACHE=$(pwd)/.npm-cache
 
-        stage('E2E Test') {
-            agent {
-                docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-focal'
-                    reuseNode true
-                }
-            }
-            steps {
-                echo 'Testing..'
-                sh '''
-                    # Ensure npm uses workspace cache
-                    export NPM_CONFIG_CACHE=$(pwd)/.npm-cache
+                                npm install serve
+                                node_modules/.bin/serve -s build &
+                                sleep 10
+                                npx playwright test --reporter=html
+                            '''
+                        }
+                    }
 
-                    npm install serve
-                    node_modules/.bin/serve -s build &
-                    sleep 10
-                    npx playwright test --reporter=html
-                '''
             }
         }
 
