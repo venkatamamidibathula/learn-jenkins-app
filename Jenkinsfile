@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
-        NETLIFY_SITE_ID = '03d4042d-476c-4668-9ce8-34352dad73e4'
+        NETLIFY_SITE_ID = 'b9398f62-1107-4461-adb2-0b8affb40254'
     }
 
     stages {
@@ -85,7 +85,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    npm install netlify-cli
+                    npm install --unsafe-perm netlify-cli
                     node_modules/.bin/netlify --version
                     echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
                 '''
