@@ -105,6 +105,18 @@ pipeline {
                 '''
             }
         }
+        stage('Clean (one-time)') {
+    agent {
+        docker {
+            image 'node:18-alpine'
+            reuseNode true
+            args '-u root:root'
+        }
+    }
+    steps {
+        sh 'rm -rf node_modules build .npm .npm-cache'
+    }
+}
     }
 
     post {
