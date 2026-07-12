@@ -1,4 +1,4 @@
-pipeline{
+pipeline {
     agent any
     stages {
         stage('Build') {
@@ -11,17 +11,23 @@ pipeline{
             steps {
                 sh '''
                     echo 'Cleaning workspace...'
-                    rm -rf node_modules package-lock.json
+                    # Don't delete package-lock.json; only remove node_modules if needed
+                    rm -rf node_modules
+
                     echo 'Setting npm cache directory...'
                     export NPM_CONFIG_CACHE=$(pwd)/.npm-cache
+
                     echo 'Building..'
                     echo 'Running on node:'
                     node --version
                     npm --version
+
                     echo 'Installing dependencies...'
-                    npm install
+                    npm ci  # or npm install if you must, but ci is better for CI
+
                     echo 'Running build...'
                     npm run build
+
                     ls -la
                 '''
             }
@@ -30,8 +36,7 @@ pipeline{
             steps {
                 echo 'Testing..'
                 sh '''
-                    sh 'test -f build/index.html'
-
+                    test -f build/index.html
                 '''
             }
         }
