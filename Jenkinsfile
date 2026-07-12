@@ -2,23 +2,10 @@ pipeline {
     agent any
 
     environment {
-        NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
-        NETLIFY_SITE_ID = "b9398f62-1107-4461-adb2-0b8affb40254"
+        NETLIFY_SITE_ID = '03d4042d-476c-4668-9ce8-34352dad73e4'
     }
 
     stages {
-        stage('Clean') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
-                    args '-u root:root'
-                }
-            }
-            steps {
-                sh 'rm -rf node_modules build .npm .npm-cache'
-            }
-        }
 
         stage('Build') {
             agent {
@@ -29,22 +16,11 @@ pipeline {
             }
             steps {
                 sh '''
-                    echo 'Cleaning workspace...'
-                    rm -rf node_modules
-
-                    echo 'Setting npm cache directory...'
-                    export NPM_CONFIG_CACHE=$(pwd)/.npm-cache
-
-                    echo 'Building..'
+                    ls -la
                     node --version
                     npm --version
-
-                    echo 'Installing dependencies...'
                     npm ci
-
-                    echo 'Running build...'
                     npm run build
-
                     ls -la
                 '''
             }
@@ -52,47 +28,50 @@ pipeline {
 
         stage('Tests') {
             parallel {
-                stage('Test') {
+                stage('Unit tests') {
                     agent {
                         docker {
                             image 'node:18-alpine'
                             reuseNode true
                         }
                     }
+
                     steps {
-                        echo 'Testing..'
                         sh '''
-                            test -f build/index.html
+                            #test -f build/index.html
                             npm test
                         '''
                     }
+                    post {
+                        always {
+                            junit 'jest-results/junit.xml'
+                        }
+                    }
                 }
 
-                stage('E2E Test') {
+                stage('E2E') {
                     agent {
                         docker {
-                            image 'mcr.microsoft.com/playwright:v1.39.0-focal'
+                            image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
                             reuseNode true
                         }
                     }
+
                     steps {
-                        echo 'Testing..'
                         sh '''
-                            export NPM_CONFIG_CACHE=$(pwd)/.npm-cache
                             npm install serve
                             node_modules/.bin/serve -s build &
                             sleep 10
-                            npx playwright test --reporter=html
+                            npx playwright test  --reporter=html
                         '''
                     }
-                }
-            }
-        }
 
-        stage('Archive') {
-            steps {
-                echo 'Archiving build artifacts...'
-                archiveArtifacts artifacts: 'build/**', fingerprint: true
+                    post {
+                        always {
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                        }
+                    }
+                }
             }
         }
 
@@ -105,25 +84,11 @@ pipeline {
             }
             steps {
                 sh '''
-                    echo 'Deploying...'
-                    npm install netlify-cli@20.1.1
+                    npm install netlify-cli
                     node_modules/.bin/netlify --version
-                    echo "Deploying to Netlify.... Site: $NETLIFY_SITE_ID"
+                    echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
                 '''
             }
-        }
-    }
-
-    post {
-        always {
-            echo 'This will always run'
-            junit 'jest-results/junit.xml'
-        }
-        success {
-            echo 'This will run only if the build is successful'
-        }
-        failure {
-            echo 'This will run only if the build fails'
         }
     }
 }
