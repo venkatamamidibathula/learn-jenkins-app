@@ -55,10 +55,8 @@ pipeline {
     }
     post {
         always {
-            sh '''
                 echo 'This will always run'
                 junit 'test-results/test-results.xml'
-            '''
         }
         success {
             echo 'This will run only if the build is successful'
