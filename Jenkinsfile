@@ -47,6 +47,23 @@ pipeline {
                 '''
             }
         }
+        stage('E2E Test') {
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.40.0-focal'
+                    reuseNode true
+                }
+            }
+            steps {
+                echo 'Testing..'
+                sh '''
+                    ng install serve
+                    node_modules/.bin/serve -s build &
+                    sleep 10
+                    npm test
+                '''
+            }
+        }
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
@@ -56,7 +73,7 @@ pipeline {
     post {
         always {
                 echo 'This will always run'
-                junit 'test-results/junit.xml'
+                junit 'jest-results/junit.xml'
         }
         success {
             echo 'This will run only if the build is successful'
