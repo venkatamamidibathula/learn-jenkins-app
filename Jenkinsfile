@@ -57,7 +57,7 @@ pipeline {
             steps {
                 echo 'Testing..'
                 sh '''
-                    ng install serve
+                    npm install serve
                     node_modules/.bin/serve -s build &
                     sleep 10
                     npm test
