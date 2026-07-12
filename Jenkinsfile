@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
-        NETLIFY_SITE_ID = 'b9398f62-1107-4461-adb2-0b8affb40254'
+        NPM_CONFIG_CACHE   = "${WORKSPACE}/.npm"
+        NETLIFY_SITE_ID    = 'b9398f62-1107-4461-adb2-0b8affb40254'
         NETLIFY_AUTH_TOKEN = credentials('netlify-token')
     }
 
@@ -44,6 +44,7 @@ pipeline {
                             npm test
                         '''
                     }
+
                     post {
                         always {
                             junit 'jest-results/junit.xml'
@@ -64,13 +65,22 @@ pipeline {
                             npm install serve
                             node_modules/.bin/serve -s build &
                             sleep 10
-                            npx playwright test  --reporter=html
+                            npx playwright test --reporter=html
                         '''
                     }
 
                     post {
                         always {
-                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                            publishHTML([
+                                allowMissing: false,
+                                alwaysLinkToLastBuild: false,
+                                keepAll: false,
+                                reportDir: 'playwright-report',
+                                reportFiles: 'index.html',
+                                reportName: 'Playwright HTML Report',
+                                reportTitles: '',
+                                useWrapperFileDirectly: true
+                            ])
                         }
                     }
                 }
@@ -97,11 +107,13 @@ pipeline {
                     node_modules/.bin/netlify --status
 
                     # Immediately restore ownership so later stages (non-root) can still read/write these files
-                     echo "Restoring ownership to $ORIGINAL_OWNER..."
+                    echo "Restoring ownership to $ORIGINAL_OWNER..."
                     chown -R "$ORIGINAL_OWNER" .
                 '''
             }
         }
+    } // end of stages
+
     post {
         always {
             cleanWs()
