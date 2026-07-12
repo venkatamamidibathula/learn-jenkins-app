@@ -81,13 +81,22 @@ pipeline {
                 docker {
                     image 'node:18-alpine'
                     reuseNode true
+                    args '-u root:root'
                 }
             }
             steps {
                 sh '''
-                    npm install --unsafe-perm netlify-cli@20.1.1
+                    # Capture the current (non-root) owner of the workspace before we touch anything as root
+                    ORIGINAL_OWNER=$(stat -c '%u:%g' .)
+                    echo "Original workspace owner: $ORIGINAL_OWNER"
+
+                    npm install netlify-cli@20.1.1
                     node_modules/.bin/netlify --version
                     echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
+
+                    # Immediately restore ownership so later stages (non-root) can still read/write these files
+                     echo "Restoring ownership to $ORIGINAL_OWNER..."
+                    chown -R "$ORIGINAL_OWNER" .
                 '''
             }
         }
