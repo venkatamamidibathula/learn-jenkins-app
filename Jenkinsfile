@@ -2,24 +2,23 @@ pipeline {
     agent any
 
     environment {
-        // Point npm cache into the workspace, not /.npm
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
-        NETLIFY_SiTE_ID = "b9398f62-1107-4461-adb2-0b8affb40254"
+        NETLIFY_SITE_ID = "b9398f62-1107-4461-adb2-0b8affb40254"
     }
 
     stages {
-
-        stage('Clean (one-time)') {
-    agent {
-        docker {
-            image 'node:18-alpine'
-            reuseNode true
-            args '-u root:root'
+        stage('Clean') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                    args '-u root:root'
+                }
+            }
+            steps {
+                sh 'rm -rf node_modules build .npm .npm-cache'
+            }
         }
-    }
-    steps {
-        sh 'rm -rf node_modules build .npm .npm-cache'
-    }
 
         stage('Build') {
             agent {
@@ -50,45 +49,43 @@ pipeline {
                 '''
             }
         }
-        stage('Tests'){
+
+        stage('Tests') {
             parallel {
                 stage('Test') {
-                        agent {
-                            docker {
-                                image 'node:18-alpine'
-                                reuseNode true
-                            }
-                        }
-                        steps {
-                            echo 'Testing..'
-                            sh '''
-                                test -f build/index.html
-                                npm test
-                            '''
+                    agent {
+                        docker {
+                            image 'node:18-alpine'
+                            reuseNode true
                         }
                     }
+                    steps {
+                        echo 'Testing..'
+                        sh '''
+                            test -f build/index.html
+                            npm test
+                        '''
+                    }
+                }
 
                 stage('E2E Test') {
                     agent {
-                            docker {
-                                image 'mcr.microsoft.com/playwright:v1.39.0-focal'
-                                reuseNode true
-                            }
-                        }
-                        steps {
-                            echo 'Testing..'
-                            sh '''
-                                # Ensure npm uses workspace cache
-                                export NPM_CONFIG_CACHE=$(pwd)/.npm-cache
-
-                                npm install serve
-                                node_modules/.bin/serve -s build &
-                                sleep 10
-                                npx playwright test --reporter=html
-                            '''
+                        docker {
+                            image 'mcr.microsoft.com/playwright:v1.39.0-focal'
+                            reuseNode true
                         }
                     }
-
+                    steps {
+                        echo 'Testing..'
+                        sh '''
+                            export NPM_CONFIG_CACHE=$(pwd)/.npm-cache
+                            npm install serve
+                            node_modules/.bin/serve -s build &
+                            sleep 10
+                            npx playwright test --reporter=html
+                        '''
+                    }
+                }
             }
         }
 
@@ -113,12 +110,9 @@ pipeline {
                     npm install netlify-cli@20.1.1
                     node_modules/.bin/netlify --version
                     echo "Deploying to Netlify.... Site: $NETLIFY_SITE_ID"
-
                 '''
             }
         }
-
-}
     }
 
     post {
