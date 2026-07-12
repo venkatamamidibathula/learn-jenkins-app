@@ -4,6 +4,7 @@ pipeline {
     environment {
         // Point npm cache into the workspace, not /.npm
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
+        NETLIFY_SiTE_ID = "b9398f62-1107-4461-adb2-0b8affb40254"
     }
 
     stages {
@@ -98,6 +99,7 @@ pipeline {
                     echo 'Deploying...'
                     npm install netlify-cli@20.1.1
                     node_modules/.bin/netlify --version
+                    echo "Deploying to Netlify.... Site: $NETLIFY_SITE_ID"
 
                 '''
             }
