@@ -78,6 +78,13 @@ pipeline {
             }
         }
 
+        stage('Archive') {
+            steps {
+                echo 'Archiving build artifacts...'
+                archiveArtifacts artifacts: 'build/**', fingerprint: true
+            }
+        }
+
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
