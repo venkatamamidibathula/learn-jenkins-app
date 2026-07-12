@@ -108,7 +108,7 @@ pipeline {
                     node_modules/.bin/netlify deploy --prod --dir=build --site=$NETLIFY_SITE_ID
 
                     # Immediately restore ownerships so later stages (non-root) can still read/write these files
-                    echo "Restore ownership to $ORIGINAL_OWNER..."
+                    echo "Restore ownership to its $ORIGINAL_OWNER..."
                     chown -R "$ORIGINAL_OWNER" .
                 '''
             }
