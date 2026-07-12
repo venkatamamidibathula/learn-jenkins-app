@@ -6,18 +6,6 @@ pipeline {
     }
 
     stages {
-        stage('Clean') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
-                    args '-u root:root'
-                }
-            }
-            steps {
-                sh 'rm -rf node_modules build .npm .npm-cache'
-            }
-        }
 
         stage('Build') {
             agent {
