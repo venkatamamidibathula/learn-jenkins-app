@@ -21,7 +21,7 @@ pipeline{
                     echo 'Installing dependencies...'
                     npm install
                     echo 'Running build...'
-                    npn run build
+                    npm run build
                     ls -la
                 '''
             }
