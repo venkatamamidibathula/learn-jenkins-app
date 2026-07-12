@@ -19,7 +19,8 @@ pipeline{
                     node --version
                     npm --version
                     echo 'Installing dependencies...'
-                    npm ci
+                    npm install
+                    echo 'Running build...'
                     npn run build
                     ls -la
                 '''
