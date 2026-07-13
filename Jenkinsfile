@@ -101,12 +101,13 @@ pipeline {
                     ORIGINAL_OWNER=$(stat -c '%u:%g' .)
                     echo "Original workspace owner: $ORIGINAL_OWNER"
 
-                    npm install netlify-cli@20.1.1 node-jq
+                    npm install netlify-cli@20.1.1
+                    apk add --no-cache jq
                     node_modules/.bin/netlify --version
                     echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
                     node_modules/.bin/netlify status
                     node_modules/.bin/netlify deploy --prod --dir=build --site=$NETLIFY_SITE_ID --json > deploymentoutput.json
-                    node_modules/.bin/jq -r '.url' deploymentoutput.json
+                    jq -r '.url' deploymentoutput.json
 
 
                     # Immediately restore ownerships so later stages (non-root) can still read/write these files
